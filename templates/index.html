@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eCFR Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>📘 Rohan Kamat's eCFR Analyzer</h1>
+    <p>Explore U.S. Federal Regulations by word count, corrections, and historical trends.</p>
+  </header>
+
+  <main>
+    <section id="overview">
+      <h2>Overview</h2>
+      <div class="card">
+        <p>Welcome to the eCFR analyzer! currently we have 3 different options to view data.</p>
+        <p>Begin by selecting a search type from the dropdown!</p>
+        <p><strong>Word count search:</strong> When you enter in the name of a institution (or select one from the dropdown) it will display the associated word count.</p>
+        <p><strong>Historical search:</strong> When you enter 2 dates in the form YYYY-MM-DD it will display the amount of historical changes between them.</p>
+        <p><strong>Corrections search:</strong> When you enter the number of a eCFR title it will display the amount of associated corrections.</p>
+        <canvas id="wordCountChart"></canvas>
+        
+      </div>
+    </section>
+
+    <section id="search">
+      <h2>Search Regulations</h2>
+      <div class="search-bar">
+        <form action="{{ url_for('search') }}" method="GET" class="search-form" id="searchForm">
+          <!-- Dropdown -->
+          <select id="categorySelect" name="category">
+            <option value="word_count">Word Count</option>
+            <option value="historical">Historical</option>
+            <option value="corrections">Corrections</option>
+          </select>
+        
+          <!-- Dynamic input container -->
+          <div id="dynamicInputs">
+            <!-- Default input (for All) -->
+            <input type="text" name="q" placeholder="Search for terms..." list="searchSuggestions" />
+            <datalist id="searchSuggestions"></datalist>
+          </div>
+        
+          <!-- Submit button -->
+          <button id="searchBtn" type="submit">Search</button>
+        </form>
+        
+        <!-- Extra buttons -->
+        <button id="resetBtn">Reset</button>        
+      </div>
+      {% if results %}
+      <div id="resultsContainer">
+        <h3>Results:</h3>
+        <ul>
+          {% for result in results %}
+            <li>{{ result }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+document.getElementById('resetBtn').addEventListener('click', function() {
+  // Clear the results in the front end
+  const resultsContainer = document.getElementById('resultsContainer');
+  if (resultsContainer) {
+    resultsContainer.innerHTML = ''; // Clear the results content
+  }
+
+  // Optionally, clear the search inputs
+  const searchInputs = document.querySelectorAll('#searchForm input');
+  searchInputs.forEach(input => input.value = ''); // Clear input fields
+
+  // Reset the form (if necessary)
+  document.getElementById('categorySelect').selectedIndex = 0; // Reset the dropdown to default
+  
+  // Redirect to the search page with reset parameter
+  window.location.href = "/search?reset=true";  // This triggers the reset logic in Flask
+});
+ function createAutocompleteInput(name, placeholder) {
+    return `
+      <input type="text" name="${name}" placeholder="${placeholder}" list="searchSuggestions" />
+      <datalist id="searchSuggestions"></datalist>
+    `;
+  }
+
+  function updateInputs(category) {
+    const container = document.getElementById('dynamicInputs');
+    container.innerHTML = ''; // Clear current inputs
+
+    if (category === 'word_count') {
+      container.innerHTML = createAutocompleteInput('q', 'Enter agency name');
+      loadSearchSuggestions();
+    } else if (category === 'historical') {
+      container.innerHTML = createAutocompleteInput('q1', 'On or after YYYY-MM-DD') + createAutocompleteInput('q2', 'On or before YYYY-MM-DD');
+    } else if (category === 'corrections') {
+      container.innerHTML = createAutocompleteInput('q', 'Title number');
+    } else {
+      // default: All
+      container.innerHTML = createAutocompleteInput('Date');
+    }
+  }
+
+  document.getElementById('categorySelect').addEventListener('change', (e) => {
+    updateInputs(e.target.value);
+  });
+
+  async function loadSearchSuggestions() {
+    try {
+      const response = await fetch('/search_suggestions');
+      const suggestions = await response.json();
+      const datalist = document.getElementById('searchSuggestions');
+      if (!datalist) return;
+      datalist.innerHTML = '';
+      suggestions.forEach(term => {
+        const option = document.createElement('option');
+        option.value = term;
+        datalist.appendChild(option);
+      });
+    } catch (err) {
+      console.error('Failed to load suggestions:', err);
+    }
+  }
+
+  // Initial load
+  loadSearchSuggestions();
+  </script>
+</body>
+</html>
