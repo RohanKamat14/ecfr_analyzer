@@ -19,8 +19,8 @@
       <div class="card">
         <p>Welcome to the eCFR analyzer! currently we have 3 different options to view data.</p>
         <p>Begin by selecting a search type from the dropdown!</p>
-        <p><strong>Word count search:</strong> When you enter in the name of a institution (or select one from the dropdown) it will display the associated word count.</p>
         <p><strong>Historical search:</strong> When you enter 2 dates in the form YYYY-MM-DD it will display the amount of historical changes between them.</p>
+        <p><strong>Word count search:</strong> When you enter in the name of a institution (or select one from the dropdown) it will display the associated word count.</p>
         <p><strong>Corrections search:</strong> When you enter the number of a eCFR title it will display the amount of associated corrections.</p>
         <canvas id="wordCountChart"></canvas>
         
@@ -33,16 +33,15 @@
         <form action="{{ url_for('search') }}" method="GET" class="search-form" id="searchForm">
           <!-- Dropdown -->
           <select id="categorySelect" name="category">
-            <option value="word_count">Word Count</option>
-            <option value="historical">Historical</option>
-            <option value="corrections">Corrections</option>
+            <option value="historical" {% if category == 'historical' %}selected{% endif %}>Historical</option>
+            <option value="word_count" {% if category == 'word_count' %}selected{% endif %}>Word Count</option>
+            <option value="corrections" {% if category == 'corrections' %}selected{% endif %}>Corrections</option>
           </select>
         
           <!-- Dynamic input container -->
           <div id="dynamicInputs">
             <!-- Default input (for All) -->
             <input type="text" name="q" placeholder="Search for terms..." list="searchSuggestions" />
-            <datalist id="searchSuggestions"></datalist>
           </div>
         
           <!-- Submit button -->
