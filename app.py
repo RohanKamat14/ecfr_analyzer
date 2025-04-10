@@ -22,10 +22,10 @@ agencies_data = fetch_agencies()
 @app.route('/')
 def hello():
     category = request.args.get('category')
-    dynamic_inputs = generate_dynamic_inputs(category)
     for x in agencies_data.values():
         for i in x:
             search_suggestions.append(i.get('name'))
+    dynamic_inputs = generate_dynamic_inputs(category)
     return render_template('index.html', dynamic_inputs=dynamic_inputs)
 
 
@@ -107,7 +107,7 @@ def query_historical(startDate, endDate):
 def generate_dynamic_inputs(category):
     # Generate dynamic inputs based on category
     if category == 'word_count':
-        return create_input('q', 'Enter agency name')
+        return create_input_ss('q', 'Enter agency name')
     elif category == 'historical':
         return (
             create_input('q1', 'On or after YYYY-MM-DD') +
@@ -116,10 +116,15 @@ def generate_dynamic_inputs(category):
     elif category == 'corrections':
         return create_input('q', 'Title number')
     else:  # default for "All"
-        return create_input('q', 'Enter agency name')
+        return create_input_ss('q', 'Enter agency name')
+
+def create_input_ss(name, placeholder):
+    return f'''
+        <input type="text" name="{name}" placeholder="{placeholder}" list="searchSuggestions" />
+        <datalist id="searchSuggestions"></datalist>
+    '''
 
 def create_input(name, placeholder):
     return f'''
-        <input type="text" name="{name}" placeholder="{placeholder}" value="{placeholder}" list="searchSuggestions" />
-        <datalist id="searchSuggestions"></datalist>
+        <input type="text" name="{name}" placeholder="{placeholder}" list="searchSuggestions" />
     '''
