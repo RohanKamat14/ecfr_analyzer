@@ -21,10 +21,12 @@ def fetch_agencies():
 agencies_data = fetch_agencies()
 @app.route('/')
 def hello():
+    category = request.args.get('category')
+    dynamic_inputs = generate_dynamic_inputs(category)
     for x in agencies_data.values():
         for i in x:
             search_suggestions.append(i.get('name'))
-    return render_template('index.html')
+    return render_template('index.html', dynamic_inputs=dynamic_inputs)
 
 
 @app.route('/search')
@@ -33,6 +35,7 @@ def search():
     q1 = request.args.get('q1')
     q2 = request.args.get('q2')
     category = request.args.get('category')
+    dynamic_inputs = generate_dynamic_inputs(category)
     if request.method == 'GET':
         # Check if the reset button was pressed
         if 'reset' in request.args:
@@ -46,7 +49,7 @@ def search():
                 elif category == 'corrections':
                     results.append(f"There have been " + str(query_corrections(query)) + " corrections on title number " + str(query))
     
-    return render_template('index.html', query=query, results=results, category=category)
+    return render_template('index.html', query=query, results=results, category=category, dynamic_inputs=dynamic_inputs)
 
 @app.route('/search_suggestions')
 def search_suggestions_route():
@@ -100,3 +103,23 @@ def query_historical(startDate, endDate):
         for i in x:
             count += 1
     return count
+
+def generate_dynamic_inputs(category):
+    # Generate dynamic inputs based on category
+    if category == 'word_count':
+        return create_input('q', 'Enter agency name')
+    elif category == 'historical':
+        return (
+            create_input('q1', 'On or after YYYY-MM-DD') +
+            create_input('q2', 'On or before YYYY-MM-DD')
+        )
+    elif category == 'corrections':
+        return create_input('q', 'Title number')
+    else:  # default for "All"
+        return create_input('q', 'Enter agency name')
+
+def create_input(name, placeholder):
+    return f'''
+        <input type="text" name="{name}" placeholder="{placeholder}" value="{placeholder}" list="searchSuggestions" />
+        <datalist id="searchSuggestions"></datalist>
+    '''

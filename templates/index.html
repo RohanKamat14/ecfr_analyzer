@@ -33,16 +33,15 @@
         <form action="{{ url_for('search') }}" method="GET" class="search-form" id="searchForm">
           <!-- Dropdown -->
           <select id="categorySelect" name="category">
-            <option value="historical" {% if category == 'historical' %}selected{% endif %}>Historical</option>
             <option value="word_count" {% if category == 'word_count' %}selected{% endif %}>Word Count</option>
+            <option value="historical" {% if category == 'historical' %}selected{% endif %}>Historical</option>
             <option value="corrections" {% if category == 'corrections' %}selected{% endif %}>Corrections</option>
           </select>
         
           <!-- Dynamic input container -->
           <div id="dynamicInputs">
             <!-- Default input (for All) -->
-            <input type="text" name="q1" placeholder="On or after YYYY-MM-DD" list="searchSuggestions" />
-            <input type="text" name="q2" placeholder="On or before YYYY-MM-DD" list="searchSuggestions" />
+            {{ dynamic_inputs|safe }}
           </div>
         
           <!-- Submit button -->
